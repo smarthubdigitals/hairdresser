@@ -1,0 +1,6 @@
+{
+  "name": "Say's Looks and Artistry",
+  "description": "An elegant, luxury-styled single-page website for Say's Looks and Artistry, featuring hair styling, makeup, piercing, manicures, and beauty services.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
