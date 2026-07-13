@@ -28,7 +28,7 @@ export default function Hero() {
       {/* Background Image Overlay */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/src/assets/images/luxury_salon_hero_1783938111589.jpg"
+          src="/images/luxury_salon_hero_1783938111589.jpg"
           alt="Say's Looks and Artistry Salon"
           className="w-full h-full object-cover object-center scale-105 filter brightness-25 contrast-110"
         />
@@ -150,7 +150,7 @@ export default function Hero() {
           <div className="relative w-72 h-96 sm:w-80 sm:h-[450px] md:w-96 md:h-[500px] rounded-2xl overflow-hidden shadow-2xl border-2 border-amber-500/20 p-2 bg-stone-900/40 backdrop-blur-sm">
             <div className="w-full h-full rounded-xl overflow-hidden relative group">
               <img
-                src="/src/assets/images/makeup_and_hair_model_1783938126321.jpg"
+                src="/images/makeup_and_hair_model_1783938126321.jpg"
                 alt="Flawless makeup and hair by Say's"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />

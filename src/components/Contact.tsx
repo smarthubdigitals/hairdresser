@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Phone,
   MapPin,
@@ -10,9 +10,24 @@ import {
   ExternalLink,
   Instagram,
   Facebook,
-  MessageSquare
+  MessageSquare,
+  Plus,
+  Minus,
+  UserPlus,
+  Coffee,
+  Calculator,
+  HelpCircle,
+  Sparkles,
+  Palette
 } from 'lucide-react';
 import { BUSINESS_INFO, SERVICES } from '../data';
+
+const ADD_ONS = [
+  { id: 'wash', name: 'Hair Wash & Scalp Massage', price: 60, description: 'Deep cleansing & steaming' },
+  { id: 'lash-upgrade', name: 'Premium 3D Lash Upgrade', price: 70, description: 'Added luxury lashes styling' },
+  { id: 'nail-art', name: 'Nail Art & Accent Gel Nails', price: 50, description: 'Custom artistic detailing' },
+  { id: 'refreshment', name: 'Luxe Lounge Mimosa & Refreshments', price: 40, description: 'Cocktail/mocktail & snack plate' }
+];
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -27,6 +42,42 @@ export default function Contact() {
 
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  
+  // Price calculator states
+  const [guestCount, setGuestCount] = useState<number>(1);
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+
+  // Listen to external service preference selection
+  useEffect(() => {
+    const checkPreference = () => {
+      const preferred = localStorage.getItem('selectedServicePreference');
+      if (preferred) {
+        setFormData(prev => ({ ...prev, service: preferred }));
+        localStorage.removeItem('selectedServicePreference');
+      }
+    };
+
+    checkPreference();
+    window.addEventListener('servicePreferenceChanged', checkPreference);
+    return () => {
+      window.removeEventListener('servicePreferenceChanged', checkPreference);
+    };
+  }, []);
+
+  const selectedServiceObj = SERVICES.find(srv => srv.name === formData.service);
+  const basePrice = selectedServiceObj ? selectedServiceObj.price : (formData.service === "Custom package" ? 300 : 0);
+
+  const addOnPricesSum = ADD_ONS.reduce((sum, addon) => {
+    return selectedAddOns.includes(addon.id) ? sum + addon.price : sum;
+  }, 0);
+
+  const grandTotal = (basePrice + addOnPricesSum) * guestCount;
+
+  const handleAddOnToggle = (id: string) => {
+    setSelectedAddOns(prev =>
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
 
   // Formspree integration URL.
   // Standard practice is to post directly to formspree endpoint.
@@ -52,6 +103,9 @@ export default function Contact() {
         body: JSON.stringify({
           ...formData,
           _subject: `New booking inquiry from ${formData.name} - Say's Looks`,
+          guestCount: guestCount,
+          selectedAddOns: selectedAddOns.map(id => ADD_ONS.find(a => a.id === id)?.name).join(', ') || 'None',
+          priceEstimate: `GH₵${grandTotal}`,
         })
       });
 
@@ -66,6 +120,8 @@ export default function Contact() {
           time: '',
           message: '',
         });
+        setGuestCount(1);
+        setSelectedAddOns([]);
       } else {
         const data = await response.json();
         if (data && data.errors) {
@@ -228,6 +284,132 @@ export default function Contact() {
                       className="w-full bg-stone-950/80 border border-stone-800 focus:border-amber-500 rounded-xl px-4 py-3 text-stone-100 placeholder-stone-600 focus:outline-none transition-colors duration-200 text-sm"
                     />
                   </div>
+                </div>
+
+                {/* Dynamic Price Calculator Panel */}
+                <div className="bg-stone-950/40 border border-stone-800/80 rounded-2xl p-5 sm:p-6 space-y-4">
+                  <div className="flex items-center gap-2 text-amber-400">
+                    <Calculator className="w-5 h-5" />
+                    <h4 className="font-serif text-base sm:text-lg font-bold text-white">Price Calculator</h4>
+                  </div>
+                  
+                  {!formData.service ? (
+                    <p className="text-xs sm:text-sm text-stone-500 italic leading-relaxed">
+                      Please select a service of interest above to calculate your estimated cost.
+                    </p>
+                  ) : (
+                    <div className="space-y-5 animate-fadeIn">
+                      {/* Guest Count & Add-ons Section */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
+                        {/* Stepper for Guests */}
+                        <div className="space-y-2">
+                          <label className="text-stone-300 text-xs sm:text-sm font-medium flex items-center gap-1.5">
+                            <UserPlus className="w-3.5 h-3.5 text-amber-500" />
+                            Number of Guests
+                          </label>
+                          <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() => setGuestCount(prev => Math.max(1, prev - 1))}
+                              className="bg-stone-900 hover:bg-stone-800 text-amber-400 p-2.5 rounded-lg border border-stone-800 hover:border-stone-700 transition-colors"
+                              aria-label="Decrease guest count"
+                            >
+                              <Minus className="w-3.5 h-3.5" />
+                            </button>
+                            <span className="font-sans font-bold text-lg text-white w-8 text-center bg-stone-950 border border-stone-800 py-1.5 rounded-lg">
+                              {guestCount}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setGuestCount(prev => Math.min(10, prev + 1))}
+                              className="bg-stone-900 hover:bg-stone-800 text-amber-400 p-2.5 rounded-lg border border-stone-800 hover:border-stone-700 transition-colors"
+                              aria-label="Increase guest count"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Description / Info */}
+                        <div className="bg-stone-900/60 p-3.5 rounded-xl border border-stone-800/40 text-[11px] sm:text-xs text-stone-400 space-y-1.5 flex flex-col justify-center">
+                          <div className="flex items-center gap-1 text-amber-500 font-semibold font-sans uppercase tracking-wider text-[10px]">
+                            <HelpCircle className="w-3.5 h-3.5" />
+                            Accra Spintex Salon
+                          </div>
+                          <p>
+                            Prices are estimated in Ghana Cedis (GH₵) and exclude standard custom materials if not provided.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Add-ons selection */}
+                      <div className="space-y-2">
+                        <span className="text-stone-300 text-xs sm:text-sm font-medium block">
+                          Enhance Your Booking (Optional Add-ons)
+                        </span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          {ADD_ONS.map(addon => {
+                            const isSelected = selectedAddOns.includes(addon.id);
+                            return (
+                              <button
+                                key={addon.id}
+                                type="button"
+                                onClick={() => handleAddOnToggle(addon.id)}
+                                className={`flex items-start gap-3 p-3 rounded-xl border text-left transition-all ${
+                                  isSelected
+                                    ? 'bg-amber-500/10 border-amber-500/50 text-white'
+                                    : 'bg-stone-900/40 border-stone-800/60 text-stone-400 hover:border-stone-700 hover:text-stone-300'
+                                }`}
+                              >
+                                <div className="mt-0.5">
+                                  {addon.id === 'wash' && <Clock className="w-4 h-4 text-amber-500/80" />}
+                                  {addon.id === 'lash-upgrade' && <Sparkles className="w-4 h-4 text-amber-500/80" />}
+                                  {addon.id === 'nail-art' && <Palette className="w-4 h-4 text-amber-500/80" />}
+                                  {addon.id === 'refreshment' && <Coffee className="w-4 h-4 text-amber-500/80" />}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <span className="font-medium text-xs truncate">{addon.name}</span>
+                                    <span className="font-bold text-xs text-amber-400 shrink-0">+GH₵{addon.price}</span>
+                                  </div>
+                                  <span className="text-[10px] text-stone-500 block truncate">{addon.description}</span>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Detailed Pricing Invoice Breakdown */}
+                      <div className="bg-stone-900/80 border border-stone-800 rounded-xl p-4 space-y-2.5">
+                        <div className="flex items-center justify-between text-xs text-stone-400">
+                          <span>Base service ({formData.service})</span>
+                          <span className="font-mono text-stone-200">GH₵{basePrice}</span>
+                        </div>
+                        
+                        {addOnPricesSum > 0 && (
+                          <div className="flex items-center justify-between text-xs text-stone-400">
+                            <span>Selected Add-ons</span>
+                            <span className="font-mono text-stone-200">+GH₵{addOnPricesSum}</span>
+                          </div>
+                        )}
+
+                        {guestCount > 1 && (
+                          <div className="flex items-center justify-between text-xs text-stone-400">
+                            <span>Guest multiplier</span>
+                            <span className="font-mono text-amber-400 font-semibold">x{guestCount}</span>
+                          </div>
+                        )}
+
+                        <div className="border-t border-stone-800/80 pt-2.5 flex items-center justify-between text-sm">
+                          <span className="font-semibold text-stone-200">Total Estimate (GH₵)</span>
+                          <span className="font-mono font-bold text-amber-400 text-base sm:text-lg">
+                            GH₵{grandTotal}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-1.5">

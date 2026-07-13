@@ -6,6 +6,7 @@ export interface Service {
   icon: string; // Lucide icon name
   duration: string;
   category: 'hair' | 'makeup' | 'nails' | 'piercing';
+  price: number; // in Ghana Cedis (GHS / GH₵)
 }
 
 export interface Review {

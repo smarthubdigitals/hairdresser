@@ -126,9 +126,14 @@ export default function Services() {
 
                   {/* Body Content */}
                   <div className="p-6 space-y-3">
-                    <h3 className="font-serif text-lg sm:text-xl font-bold text-white group-hover:text-amber-300 transition-colors">
-                      {service.name}
-                    </h3>
+                    <div className="flex justify-between items-start gap-2">
+                      <h3 className="font-serif text-lg sm:text-xl font-bold text-white group-hover:text-amber-300 transition-colors">
+                        {service.name}
+                      </h3>
+                      <span className="text-amber-400 font-bold font-sans text-xs sm:text-sm shrink-0 bg-stone-950/60 px-2.5 py-1 rounded-lg border border-amber-500/10">
+                        GH₵{service.price}
+                      </span>
+                    </div>
                     <p className="text-stone-400 text-sm line-clamp-3 leading-relaxed">
                       {service.description}
                     </p>
@@ -251,6 +256,9 @@ export default function Services() {
                     <span className="text-stone-400">{selectedService.duration}</span>
                   </div>
                   <div className="flex items-center gap-2 text-stone-300">
+                    <span className="font-medium text-amber-400 font-sans text-base">Cost: GH₵{selectedService.price}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-stone-300">
                     <Info className="w-4 h-4 text-amber-500" />
                     <span className="font-medium">Service Type:</span>
                     <span className="text-stone-400 capitalize">{selectedService.category}</span>
@@ -271,7 +279,13 @@ export default function Services() {
                     id="modal-direct-booking-form"
                     href="#contact"
                     className="flex-1 flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold py-3.5 rounded-xl transition-all shadow-md"
-                    onClick={() => setSelectedService(null)}
+                    onClick={() => {
+                      if (selectedService) {
+                        localStorage.setItem('selectedServicePreference', selectedService.name);
+                        window.dispatchEvent(new Event('servicePreferenceChanged'));
+                      }
+                      setSelectedService(null);
+                    }}
                   >
                     <Calendar className="w-4 h-4" />
                     Book on Website
